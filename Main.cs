@@ -58,7 +58,7 @@ namespace NiceBowl
             Text += " " + Application.ProductVersion;
             Icon = (Icon)Properties.Resources.ResourceManager.GetObject("icon");
             mTimer.OnUpdate += OnTimerUpdate;
-            textBox轴.Text = System.IO.File.ReadAllText("../../dev/C5圣千.txt");
+            //textBox轴.Text = System.IO.File.ReadAllText("../../dev/C5圣千.txt");
             /*
             for (int i = -4; i <= 8; i++)
             {
