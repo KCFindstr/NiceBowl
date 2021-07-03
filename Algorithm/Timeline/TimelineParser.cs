@@ -11,12 +11,12 @@ namespace NiceBowl.Algorithm.Timeline
     {
         private static long TimeLiteralToLong(string mm, string ss, string ms)
         {
-            long lmm = int.Parse(mm);
-            long lss = int.Parse(ss);
+            long lmm = long.Parse(mm);
+            long lss = long.Parse(ss);
             while (ms.Length < 3)
                 ms += "0";
             ms = ms.Substring(0, 3);
-            long lms = int.Parse(ms);
+            long lms = long.Parse(ms);
             return lmm * 60 * 1000 + lss * 1000 + lms;
         }
 
@@ -74,19 +74,27 @@ namespace NiceBowl.Algorithm.Timeline
 
         private static readonly Parser<IStrExpr> UbAction = StrExpr;
 
-        private static readonly Parser<CharaUbTime> UbTimeWithCont =
+        private static readonly Parser<CharaUbTime> TimeWithCont =
             from start in IntExpr
             from _1 in WHITE_SPACE.Many()
             from _2 in Parse.Char('~')
             from end in IntExpr
             select new CharaUbTime { time = start, end = end };
 
-        private static readonly Parser<CharaUbTime> UbTime =
+        private static readonly Parser<CharaUbTime> Time =
             from start in IntExpr
             select new CharaUbTime { time = start, end = null };
 
+        private static readonly Parser<CharaUbTime> UbTimeAbs =
+            TimeWithCont.Or(Time);
+
+        private static readonly Parser<CharaUbTime> UbTimeRel =
+            from _1 in Parse.Char('+')
+            from time in UbTimeAbs
+            select time.SetIsOffset(true);
+
         private static readonly Parser<IStatement> UbStatement =
-            from time in UbTimeWithCont.Or(UbTime)
+            from time in UbTimeRel.Or(UbTimeAbs)
             from action in UbAction
             from _1 in WHITE_SPACE.Many()
             from _2 in LINE_END

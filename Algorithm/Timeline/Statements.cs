@@ -1,11 +1,6 @@
 ﻿using NiceBowl.Event;
-using NiceBowl.Screen;
-using Sprache;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NiceBowl.Algorithm.Timeline
 {
@@ -45,6 +40,14 @@ namespace NiceBowl.Algorithm.Timeline
 
         public void Run(EventContext ctx)
         {
+            IIntExpr refTime = null;
+            if (time.isRelative) {
+                refTime = ctx.Events.FindLast(e => !e.IsRelative).timeExpr;
+                if (refTime == null) {
+                    refTime = new ConstIntExpr(1000 * 91); // 1:31
+                }
+            }
+
             ctx.AddEvent(new EventData(time.time, (data, context) =>
             {
                 var chara = context.FindChara(action.Eval());
@@ -54,17 +57,18 @@ namespace NiceBowl.Algorithm.Timeline
                     return EventState.Stopped;
                 }
                 context.Window.Click(chara.pos.x, chara.pos.y);
-                if (time.end == null || context.time <= time.end.Eval())
-                {
-                    return EventState.Stopped;
-                }
                 return EventState.Running;
-            }));
+            }, time.end, refTime));
         }
 
         public override string ToString()
         {
-            return $"在{time}{(time.IsContinuous ?"连点" : "点击")}：{action}";
+            var timeStr = new StringBuilder().Append(time);
+            if (time.isRelative) {
+                timeStr.Append("后");
+            }
+            timeStr.Append(time.IsContinuous ? "连点" : "点击");
+            return $"在{timeStr}：{action}";
         }
     }
 

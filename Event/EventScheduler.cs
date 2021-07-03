@@ -1,19 +1,17 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace NiceBowl.Event
+﻿namespace NiceBowl.Event
 {
     class EventScheduler
     {
         private EventContext mContext;
 
-        public void OnTimerUpdate(long prev, long time)
+        public void OnTimerUpdate(long prevRealTime, long realTime, long prev, long time)
         {
             var context = mContext;
             if (context == null)
                 return;
 
+            context.prevRealTime = prevRealTime;
+            context.realTime = realTime;
             context.prevTime = prev;
             context.time = time;
 
@@ -30,14 +28,7 @@ namespace NiceBowl.Event
                 }
             }
 
-            foreach (var e in context.Events)
-            {
-                long eTime = e.time.Eval();
-                if (e.state == EventState.Stopped)
-                    continue;
-                if (e.state == EventState.Running || eTime < prev && eTime >= time)
-                    e.Run(context);
-            }
+            context.Events.RemoveAll(e => e.Run() == EventState.Stopped);
         }
 
         public void SetContext(EventContext context)

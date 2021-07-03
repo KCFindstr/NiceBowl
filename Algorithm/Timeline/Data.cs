@@ -36,6 +36,7 @@ namespace NiceBowl.Algorithm.Timeline
 
     class CharaUbTime
     {
+        public bool isRelative = false;
         public IIntExpr time;
         public IIntExpr end;
 
@@ -47,6 +48,11 @@ namespace NiceBowl.Algorithm.Timeline
             if (IsContinuous)
                 ret += "~" + end.ToTimeString();
             return ret;
+        }
+
+        public CharaUbTime SetIsOffset(bool val) {
+            isRelative = val;
+            return this;
         }
     }
 }

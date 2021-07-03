@@ -29,7 +29,9 @@ namespace NiceBowl.Event
         public bool Ready { get; private set; } = false;
         public Rect TimerRect { get; private set; } = new Rect();
         public long Time { get; private set; }
-        public Action<long, long> OnUpdate;
+        public long RealTime => mWatch?.ElapsedMilliseconds ?? 0;
+        private long prevRealTime = long.MaxValue;
+        public Action<long, long, long, long> OnUpdate;
 
         private const int ANALYZE_WINDOW = 60;
         private readonly WindowManager mWindowManager;
@@ -187,13 +189,15 @@ namespace NiceBowl.Event
                 mCurrent = selected;
             }
             long prev = Time;
+            long realTime = RealTime;
             Time = (mCurrent.sec + 1) * 1000 -
-                Math.Min(1000, watch.ElapsedMilliseconds - mCurrent.time);
+                Math.Min(1000, realTime - mCurrent.time);
             if (!Ready && mCurrent.sec < 90)
                 Ready = true;
             token.ThrowIfCancellationRequested();
-            if (prev != long.MaxValue)
-                OnUpdate?.Invoke(prev, Time);
+            if (prevRealTime != long.MaxValue && prev != long.MaxValue && mWatch != null)
+                OnUpdate?.Invoke(prevRealTime, realTime, prev, Time);
+            prevRealTime = realTime;
         }
 
         private async Task Update()
@@ -230,6 +234,7 @@ namespace NiceBowl.Event
                 return false;
             }
             Ready = false;
+            prevRealTime = long.MaxValue;
             CancelTask();
             mCancelWaitTaskPosition = new CancellationTokenSource();
             mWindowRect = mWindowManager.GetWindowRect();

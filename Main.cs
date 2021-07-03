@@ -18,11 +18,11 @@ namespace NiceBowl
     {
         public static Main instance;
         public static readonly AppVersion version = new AppVersion(Application.ProductVersion);
-        public static void Log(string message)
+        public static void Log(object message)
         {
             Console.WriteLine(message);
             instance.textBoxLog.Invoke(new Action(() => {
-                instance.textBoxLog.AppendText(message + "\r\n");
+                instance.textBoxLog.AppendText(message.ToString() + "\r\n");
             }));
         }
 
@@ -40,7 +40,7 @@ namespace NiceBowl
             InitializeComponent();
         }
 
-        private void OnTimerUpdate(long _, long time)
+        private void OnTimerUpdate(long _1, long _2, long _3, long time)
         {
             textTime.Invoke(new Action(() =>
             {
