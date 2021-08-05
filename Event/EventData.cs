@@ -52,11 +52,19 @@ namespace NiceBowl.Event
             if (state == EventState.Running) {
                 if (endTimeExpr == null) {
                     state = EventState.Stopped;
-                } else if (context.JustPassedReal(GetRelativeTime(endTimeExpr))) {
-                    state = EventState.Stopped;
                 } else if (Duration > 30 * 1000) {
                     Main.Log("警告：事件超过了30秒，强制终止。");
                     state = EventState.Stopped;
+                } else {
+                    if (IsRelative) {
+                        if (context.JustPassedReal(GetRelativeTime(endTimeExpr))) {
+                            state = EventState.Stopped;
+                        }
+                    } else {
+                        if (context.JustPassedGame(endTimeExpr.Eval())) {
+                            state = EventState.Stopped;
+                        }
+                    }
                 }
             }
             return state;
